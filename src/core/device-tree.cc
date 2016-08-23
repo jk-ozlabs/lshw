@@ -1138,6 +1138,9 @@ bool scan_device_tree(hwNode & n)
   }
 
   n.setProduct(get_string(DEVICETREE "/model", n.getProduct()));
+  if (n.getProduct() == "")
+    n.setProduct(get_string(DEVICETREE "/model-name"));
+
   n.addHint("icon", string("motherboard"));
 
   n.setSerial(get_string(DEVICETREE "/serial-number", n.getSerial()));
@@ -1148,7 +1151,7 @@ bool scan_device_tree(hwNode & n)
   if (matches(get_string(DEVICETREE "/compatible"), "^ibm,powernv"))
   {
     n.setVendor(get_string(DEVICETREE "/vendor", "IBM"));
-    n.setProduct(get_string(DEVICETREE "/model-name"));
+
     n.setDescription("PowerNV");
     if (core)
     {
