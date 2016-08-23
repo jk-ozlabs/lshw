@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <glob.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mount.h>
@@ -208,6 +209,35 @@ string entry::driver() const
   if (!exists(driverlink))
     return "";
   return basename(readlink(driverlink).c_str());
+}
+
+string entry::slot() const
+{
+  glob_t entries;
+  string pattern;
+  int rc, slot;
+  FILE *fp;
+
+  pattern = This->devpath + "/enclosure_device:*";
+
+  rc = glob(pattern.c_str(), 0, NULL, &entries);
+  if (rc != 0)
+    return "";
+
+  if (entries.gl_pathc != 1) {
+    globfree(&entries);
+    return "";
+  }
+
+  fp = fopen((string(entries.gl_pathv[0]) + "/slot").c_str(), "r");
+  rc = fscanf(fp, "%d", &slot);
+  fclose(fp);
+  globfree(&entries);
+
+  if (rc != 1)
+    return "";
+
+  return tostring(slot);
 }
 
 
