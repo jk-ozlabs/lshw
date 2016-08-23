@@ -464,6 +464,27 @@ static void scan_devtree_cpu_power(hwNode & core)
   map <uint32_t, pair<uint32_t, vector <hwNode> > > l2_caches;
   map <uint32_t, vector <hwNode> > l3_caches;
   map <uint32_t, processor_vpd_data *> processor_vpd;
+  map <uint32_t, string> xscoms;
+
+  pushd(DEVICETREE);
+  n = scandir(".", &namelist, selectdir, alphasort);
+  popd();
+
+  if (n > 0) {
+    for (int i = 0; i < n; i++) {
+      string sname = string(namelist[i]->d_name);
+      string fullpath = "";
+      int chipid = 0;
+
+      if (sname.substr(0,5) == "xscom") {
+        fullpath = string(DEVICETREE) + "/" + sname;
+        chipid = get_u32(fullpath + "/ibm,chip-id");
+        xscoms.insert(std::pair<uint32_t, string>(chipid, fullpath));
+      }
+      free(namelist[i]);
+    }
+    free(namelist);
+  }
 
   pushd(DEVICETREE "/cpus");
   n = scandir(".", &namelist, selectdir, alphasort);
@@ -586,11 +607,25 @@ static void scan_devtree_cpu_power(hwNode & core)
     {
       uint32_t chip_id = get_u32(basepath + "/ibm,chip-id");
       processor_vpd_data * data = processor_vpd[chip_id];
+      string xscom_path = xscoms[chip_id];
+
       if (data != NULL)
       {
         cpu.setProduct(cpu.getProduct() + " " + data->product);
         cpu.setSerial(data->serial);
         cpu.setSlot(data->slot);
+      }
+
+      if (xscom_path != "")
+      {
+        vector <string> board_pieces;
+        splitlines(get_string(xscom_path + "/board-info"), board_pieces, ' ');
+        if (board_pieces.size() > 0)
+          cpu.setVendor(board_pieces[0]);
+        cpu.setSerial(get_string(xscom_path + "/serial-number"));
+        cpu.setSlot(get_string(xscom_path + "/location"));
+        cpu.setProduct(get_string(xscom_path + "/part-number"));
+        board_pieces.clear();
       }
     }
 
