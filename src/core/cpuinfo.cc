@@ -68,17 +68,17 @@ const string & version)
   {
     vector <string> words;
 
-    string prod = cpu->getProduct();
+    string prod = cpu->getDescription();
     int cnt = splitlines(prod, words, ' ');
     if (cnt>2 &&
         words[cnt-2].substr(0, 5) == "Part#" &&
         words[cnt-1].substr(0, 4) == "FRU#")
     {
       string cpuvalue = name + " " +words[cnt-2] + " " + words[cnt-1];
-      cpu->setProduct(cpuvalue);
+      cpu->setDescription(cpuvalue);
     }
     else
-      cpu->setProduct(name);
+      cpu->setDescription(name);
 
     cpu->setVersion(version);
 

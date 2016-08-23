@@ -227,8 +227,7 @@ static string cpubusinfo(int cpu)
 
 static void set_cpu(hwNode & cpu, int currentcpu, const string & basepath)
 {
-  cpu.setProduct(get_string(basepath + "/name"));
-  cpu.setDescription("CPU");
+  cpu.setDescription(get_string(basepath + "/name"));
   cpu.claim();
   cpu.setBusInfo(cpubusinfo(currentcpu));
   cpu.setSize(get_u32(basepath + "/clock-frequency"));
@@ -349,7 +348,7 @@ static void scan_devtree_cpu(hwNode & core)
 
 struct processor_vpd_data
 {
-  string product;
+  string description;
   string serial;
   string slot;
 };
@@ -370,13 +369,13 @@ static void add_chip_level_vpd(string name, string path,
     if (exists("serial-number"))
       data->serial = hw::strip(get_string("serial-number"));
 
-    data->product = string("Part#") + get_string("part-number");
-    data->product = data->product.substr(0, data->product.size()-1);
+    data->description = string("Part#") + get_string("part-number");
+    data->description = data->description.substr(0, data->description.size()-1);
     if (exists("fru-number"))
-      data->product += " FRU#" + get_string("fru-number");
+      data->description += " FRU#" + get_string("fru-number");
 
-    if (data->product != "")
-      data->product = hw::strip(data->product);
+    if (data->description != "")
+      data->description = hw::strip(data->description);
 
     if (exists("ibm,loc-code"))
       data->slot = hw::strip(get_string("ibm,loc-code"));
@@ -611,7 +610,7 @@ static void scan_devtree_cpu_power(hwNode & core)
 
       if (data != NULL)
       {
-        cpu.setProduct(cpu.getProduct() + " " + data->product);
+        cpu.setDescription(cpu.getDescription() + " " + data->description);
         cpu.setSerial(data->serial);
         cpu.setSlot(data->slot);
       }
