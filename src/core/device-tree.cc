@@ -214,6 +214,36 @@ static void scan_devtree_bootrom(hwNode & core)
   }
 }
 
+static void scan_devtree_firmware_powernv(hwNode &core)
+{
+  struct dirent **namelist;
+  int n;
+
+  pushd(DEVICETREE "/ibm,firmware-versions");
+  n = scandir(".", &namelist, selectfile, alphasort);
+  popd();
+
+  if (n < 0)
+    return;
+
+  for (int i = 0; i < n; i++)
+  {
+    string sname = string(namelist[i]->d_name);
+    string fullpath = string(DEVICETREE) + "/ibm,firmware-versions/" + sname;
+
+    if (sname == "linux,phandle" || sname == "name" || sname == "phandle")
+        continue;
+
+    hwNode newnode("firmware");
+    newnode.setDescription(sname);
+    newnode.setVersion(get_string(fullpath));
+    newnode.claim();
+    core.addChild(newnode);
+
+    free(namelist[i]);
+  }
+  free(namelist);
+}
 
 static string cpubusinfo(int cpu)
 {
@@ -1191,6 +1221,7 @@ bool scan_device_tree(hwNode & n)
     {
       core->addHint("icon", string("board"));
       scan_devtree_root(*core);
+      scan_devtree_firmware_powernv(*core);
       scan_devtree_cpu_power(*core);
       scan_devtree_memory_powernv(*core);
       n.addCapability("powernv", "Non-virtualized");
