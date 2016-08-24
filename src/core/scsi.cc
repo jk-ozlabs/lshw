@@ -752,6 +752,16 @@ static void scan_sg(hwNode & n)
   if ((m_id.scsi_type == 0) || (m_id.scsi_type == 7) || (m_id.scsi_type == 14))
     scan_disk(device);
 
+  sysfs::entry e = sysfs::entry::byBus("scsi",
+                              tostring(m_id.host_no) + ":" +
+                              tostring(m_id.channel) + ":" +
+                              tostring(m_id.scsi_id) + ":" +
+                              tostring(m_id.lun));
+  string slot = e.slot();
+  if (slot != "")
+    device.setSlot(slot);
+
+
   memset(slot_name, 0, sizeof(slot_name));
   if (ioctl(fd, SCSI_IOCTL_GET_PCI, slot_name) >= 0)
   {
