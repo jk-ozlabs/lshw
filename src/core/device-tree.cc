@@ -652,7 +652,7 @@ static void scan_devtree_cpu_power(hwNode & core)
         if (board_pieces.size() > 0)
           cpu.setVendor(board_pieces[0]);
         cpu.setSerial(get_string(xscom_path + "/serial-number"));
-        cpu.setSlot(get_string(xscom_path + "/location"));
+        cpu.setSlot(get_string(xscom_path + "/ibm,slot-location-code"));
         cpu.setProduct(get_string(xscom_path + "/part-number"));
         board_pieces.clear();
       }
@@ -761,7 +761,7 @@ int add_memory_bank_mba_dimm(string path, unsigned long serial, hwNode & bank)
       found = add_memory_bank_mba_dimm(fullpath, serial, bank);
     } else if ((sname.substr(0,4) == "dimm")&&
         (get_u32(fullpath + "/serial-number") == serial)) {
-      bank.setSlot(get_string(path + "/" + string(namelist[i]->d_name) + "/location"));
+      bank.setSlot(get_string(path + "/" + string(namelist[i]->d_name) + "/ibm,slot-location-code"));
       found = 1;
     }
     free(namelist[i]);
