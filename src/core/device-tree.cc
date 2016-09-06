@@ -774,6 +774,7 @@ void add_memory_bank_spd(string path, hwNode & bank)
 {
   int fd = open(path.c_str(), O_RDONLY);
   dimminfo_buf dimminfo;
+  size_t len;
 
   if (fd < 0)
     return;
@@ -784,12 +785,15 @@ void add_memory_bank_spd(string path, hwNode & bank)
   }
 
   /* Read entire SPD eeprom */
+  len = 0;
   if (dimminfo[2] >= 9) /* DDR3 */
   {
-    read(fd, &dimminfo[0x80], (64 << ((dimminfo[0] & 0x70) >> 4)));
+    len = 64 << ((dimminfo[0] & 0x70) >> 4);
   } else if (dimminfo[0] < 15) { /* DDR 2 */
-    read(fd, &dimminfo[0x80], (1 << (dimminfo[1]) ));
+    len = 1 << dimminfo[1];
   }
+  if (len > 0x80)
+    read(fd, &dimminfo[0x80], len - 0x80);
 
   close(fd);
 
