@@ -656,9 +656,12 @@ static void scan_devtree_cpu_power(hwNode & core)
         splitlines(get_string(xscom_path + "/board-info"), board_pieces, ' ');
         if (board_pieces.size() > 0)
           cpu.setVendor(board_pieces[0]);
-        cpu.setSerial(get_string(xscom_path + "/serial-number"));
-        cpu.setSlot(get_string(xscom_path + "/ibm,slot-location-code"));
-        cpu.setProduct(get_string(xscom_path + "/part-number"));
+	if (cpu.getSerial() == "")
+          cpu.setSerial(get_string(xscom_path + "/serial-number"));
+        if (cpu.getSlot() == "")
+	  cpu.setSlot(get_string(xscom_path + "/ibm,slot-location-code"));
+        if (cpu.getProduct() == "")
+          cpu.setProduct(get_string(xscom_path + "/part-number"));
         board_pieces.clear();
       }
     }
