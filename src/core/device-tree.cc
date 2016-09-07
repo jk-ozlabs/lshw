@@ -832,12 +832,17 @@ void add_memory_bank_spd(string path, hwNode & bank)
 
       /* there is no other valid values for the medium- and fine- timebase
        * other than (125ps, 1ps), so we hard-code those here. The fine
-       * t_{ckavg}_{min} value is signed. */
-      ns = ((float)dimminfo[0x12] * 0.125) +
-        (*((signed char *)&dimminfo[0x7d]) * 0.001);
+       * t_{ckavg}_{min} value is signed. Divide by 2 to get from raw clock to
+       * expected data rate */
+
+      ns = (((float)dimminfo[0x12] * 0.125) +
+        (((signed char) dimminfo[0x7d]) * 0.001)) / 2;
 
       snprintf(vendor, sizeof(vendor), "%x%x",
           dimminfo[0x141], dimminfo[0x140]);
+
+      /* DDR4 top 3 bits number of bank groups, bottom 4 bits 4 = 4GB, 5 = 8GB */
+      bank.setSize((dimminfo[0x4] >> 5) * (1UL << ((dimminfo[0x4] & 0xF) + 28)));
 
     } else {
       type = "DDR3";
@@ -850,6 +855,7 @@ void add_memory_bank_spd(string path, hwNode & bank)
 
       ns = (dimminfo[0xc] / 2) * (dimminfo[0xa] / (float) dimminfo[0xb]);
       snprintf(vendor, sizeof(vendor), "%x%x", dimminfo[0x76], dimminfo[0x75]);
+      bank.setSize(1UL << ((dimminfo[0x4] & 0xF) + 29));
     }
 
     /* DDR3 & DDR4 error detection and correction scheme */
@@ -865,7 +871,6 @@ void add_memory_bank_spd(string path, hwNode & bank)
     }
 
     bank.setClock(1000000000 / ns);
-    bank.setSize(1UL << ((dimminfo[0x4] & 0xF) + 29));
     bank.setVendor(jedec_resolve(vendor));
 
     char description[100];
