@@ -219,6 +219,9 @@ static void scan_devtree_firmware_powernv(hwNode &core)
   struct dirent **namelist;
   int n;
 
+  if (!exists(DEVICETREE "/ibm,firmware-versions"))
+      return;
+
   pushd(DEVICETREE "/ibm,firmware-versions");
   n = scandir(".", &namelist, selectfile, alphasort);
   popd();
@@ -231,8 +234,10 @@ static void scan_devtree_firmware_powernv(hwNode &core)
     string sname = string(namelist[i]->d_name);
     string fullpath = string(DEVICETREE) + "/ibm,firmware-versions/" + sname;
 
-    if (sname == "linux,phandle" || sname == "name" || sname == "phandle")
+    if (sname == "linux,phandle" || sname == "name" || sname == "phandle") {
+        free(namelist[i]);
         continue;
+    }
 
     hwNode newnode("firmware");
     newnode.setDescription(sname);
