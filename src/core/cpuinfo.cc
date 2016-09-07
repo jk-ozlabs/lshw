@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <iostream>
 
 __ID("@(#) $Id$");
 
@@ -66,22 +67,17 @@ const string & version)
 
   while (cpu)
   {
-    vector <string> words;
+    size_t pos = cpu->getDescription().find("FRU#");
+    string description = cpu->getDescription();
 
-    string prod = cpu->getDescription();
-    int cnt = splitlines(prod, words, ' ');
-    if (cnt>2 &&
-        words[cnt-2].substr(0, 5) == "Part#" &&
-        words[cnt-1].substr(0, 4) == "FRU#")
-    {
-      string cpuvalue = name + " " +words[cnt-2] + " " + words[cnt-1];
-      cpu->setDescription(cpuvalue);
-    }
-    else
+    if (pos != string::npos) {
+      string fru_id = description.substr(pos, description.length() - pos);
+      cpu->setDescription(name + " " + fru_id);
+    } else {
       cpu->setDescription(name);
+    }
 
     cpu->setVersion(version);
-
     cpu = getcpu(node, ++currentcpu);
   }
 }

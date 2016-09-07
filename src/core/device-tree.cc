@@ -385,6 +385,7 @@ struct processor_vpd_data
 {
   string description;
   string serial;
+  string product;
   string slot;
 };
 
@@ -404,13 +405,11 @@ static void add_chip_level_vpd(string name, string path,
     if (exists("serial-number"))
       data->serial = hw::strip(get_string("serial-number"));
 
-    data->description = string("Part#") + get_string("part-number");
-    data->description = data->description.substr(0, data->description.size()-1);
-    if (exists("fru-number"))
-      data->description += " FRU#" + get_string("fru-number");
+    if (exists("part-number"))
+      data->product = hw::strip(get_string("part-number"));
 
-    if (data->description != "")
-      data->description = hw::strip(data->description);
+    if (exists("fru-number"))
+      data->description += " FRU#" + hw::strip(get_string("fru-number"));
 
     if (exists("ibm,loc-code"))
       data->slot = hw::strip(get_string("ibm,loc-code"));
@@ -648,6 +647,7 @@ static void scan_devtree_cpu_power(hwNode & core)
         cpu.setDescription(cpu.getDescription() + " " + data->description);
         cpu.setSerial(data->serial);
         cpu.setSlot(data->slot);
+        cpu.setProduct(data->product);
       }
 
       if (xscom_path != "")
@@ -972,10 +972,10 @@ void add_memory_bank(string name, string path, hwNode & core)
     if(exists("serial-number"))
       bank.setSerial(hw::strip(get_string("serial-number")));
 
-    product = get_string("part-number");
+    product = hw::strip(get_string("part-number"));
     if(exists("fru-number"))
     {
-      product += " FRU#" + get_string("fru-number");
+      product += " FRU#" + hw::strip(get_string("fru-number"));
     }
     if(product != "")
       bank.setProduct(hw::strip(product));
