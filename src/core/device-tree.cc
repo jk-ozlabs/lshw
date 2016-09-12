@@ -776,6 +776,9 @@ int add_memory_bank_mba_dimm(string path, unsigned long serial, hwNode & bank)
     } else if ((sname.substr(0,4) == "dimm")&&
         (get_u32(fullpath + "/serial-number") == serial)) {
       bank.setSlot(get_string(path + "/" + string(namelist[i]->d_name) + "/ibm,slot-location-code"));
+
+      vector < reg_entry > regs = get_reg_property(fullpath);
+      bank.setSize(regs[0].size);
       found = 1;
     }
     free(namelist[i]);
@@ -855,9 +858,6 @@ void add_memory_bank_spd(string path, hwNode & bank)
       snprintf(vendor, sizeof(vendor), "%x%x",
           dimminfo[0x141], dimminfo[0x140]);
 
-      /* DDR4 top 3 bits number of bank groups, bottom 4 bits 4 = 4GB, 5 = 8GB */
-      bank.setSize((dimminfo[0x4] >> 5) * (1UL << ((dimminfo[0x4] & 0xF) + 28)));
-
     } else {
       type = "DDR3";
       mfg_loc_offset = 0x77;
@@ -869,7 +869,6 @@ void add_memory_bank_spd(string path, hwNode & bank)
 
       ns = (dimminfo[0xc] / 2) * (dimminfo[0xa] / (float) dimminfo[0xb]);
       snprintf(vendor, sizeof(vendor), "%x%x", dimminfo[0x76], dimminfo[0x75]);
-      bank.setSize(1UL << ((dimminfo[0x4] & 0xF) + 29));
     }
 
     /* DDR3 & DDR4 error detection and correction scheme */
