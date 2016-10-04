@@ -230,6 +230,12 @@ string entry::slot() const
   }
 
   fp = fopen((string(entries.gl_pathv[0]) + "/slot").c_str(), "r");
+
+  if (!fp) {
+      globfree(&entries);
+      return "";
+  }
+
   rc = fscanf(fp, "%d", &slot);
   fclose(fp);
   globfree(&entries);
