@@ -1260,6 +1260,13 @@ bool scan_device_tree(hwNode & n)
     n.setSerial(get_string(DEVICETREE "/system-id"));
   fix_serial_number(n);
 
+  /* add board serial */
+  if (core) {
+    core->setSerial(get_string(DEVICETREE "/ibm,board-serial-number",
+          core->getSerial()));
+    fix_serial_number(*core);
+  }
+
   if (matches(get_string(DEVICETREE "/compatible"), "^ibm,powernv"))
   {
     n.setVendor(get_string(DEVICETREE "/vendor", "IBM"));
